@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fabloval — Paredes, techos y pisos, cubiertos.</title>
+  <meta name="description" content="Fabloval: materiales de construcción con soluciones eficientes y duraderas. Revestimientos, bases, impermeabilizantes, stucco y kits de microcemento con precios al mayor y entrega en obra. Pide por WhatsApp.">
+  <meta name="theme-color" content="#EEF0E9">
+  <link rel="icon" href="assets/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/",
+      "gsap": "https://cdn.jsdelivr.net/npm/gsap@3.15.0/index.js",
+      "gsap/ScrollTrigger": "https://cdn.jsdelivr.net/npm/gsap@3.15.0/ScrollTrigger.js",
+      "lenis": "https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.mjs"
+    }
+  }
+  </script>
+
+  <link rel="stylesheet" href="motor-3d/motor3d.css">
+  <style>
+    :root {
+      --m3d-fondo: #EEF0E9;
+      --m3d-texto: #0B2036;
+      --m3d-acento: #B8890A;
+      --m3d-sobre-acento: #0B2036;
+      --m3d-fuente: "Inter", system-ui, sans-serif;
+      --m3d-fuente-titulos: "Big Shoulders Display", system-ui, sans-serif;
+    }
+    h1, h2, h3 { font-weight: 800; letter-spacing: 0; text-transform: uppercase; }
+    .m3d-etiqueta { font-weight: 700; }
+    .m3d-cabecera__marca img { height: 46px; max-width: 200px; }
+    .m3d-cabecera--compacta .m3d-cabecera__marca img { height: 36px; }
+    .m3d-cabecera__marca { display: flex; align-items: center; gap: .6rem; text-decoration: none; }
+    .m3d-cabecera__marca span { font-family: var(--m3d-fuente-titulos); font-weight: 800; font-size: 1.5rem; color: var(--m3d-texto); letter-spacing: .02em; }
+
+    /* El fondo fotográfico del origen */
+    .h-fondo {
+      position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background: url("assets/fondo-origen.jpg") center / cover no-repeat;
+      opacity: 0; transition: opacity 1.4s ease;
+      transform: scale(1.04);
+      animation: hFondo 24s ease-in-out infinite alternate;
+    }
+    .h-fondo::after {
+      content: ""; position: absolute; inset: 0;
+      background:
+        linear-gradient(90deg, color-mix(in srgb, var(--m3d-fondo) 94%, transparent) 0%, color-mix(in srgb, var(--m3d-fondo) 80%, transparent) 40%, color-mix(in srgb, var(--m3d-fondo) 25%, transparent) 72%, color-mix(in srgb, var(--m3d-fondo) 40%, transparent) 100%),
+        linear-gradient(180deg, color-mix(in srgb, var(--m3d-fondo) 85%, transparent) 0%, transparent 25%, transparent 70%, var(--m3d-fondo) 100%);
+    }
+    .h-fondo.h-visible { opacity: 1; }
+    @keyframes hFondo { from { transform: scale(1.04) translate(0, 0); } to { transform: scale(1.1) translate(-1.5%, 1%); } }
+
+    /* El viaje del camión */
+    .h-viaje { display: block; align-content: start; min-height: 220vh; padding: 0; max-width: none; }
+    .h-viaje-escena {
+      position: sticky; top: 0; height: 100vh;
+      display: grid; align-content: end;
+      padding: clamp(5rem, 10vh, 8rem) clamp(1.25rem, 6vw, 6rem) clamp(5rem, 10vh, 7rem);
+      max-width: var(--m3d-ancho); margin: 0 auto; text-align: center;
+    }
+    .h-viaje-escena > * { justify-self: center; max-width: 60ch; }
+    .h-viaje-escena .m3d-titulo--xl { font-size: clamp(2.2rem, 5.4vw, 4.8rem); }
+    .h-aterrizaje { position: absolute; left: 0; top: 120vh; height: 1px; min-height: 0; padding: 0; margin: 0; }
+    .h-marcador {
+      position: absolute; pointer-events: none; max-width: none;
+      font-size: .82rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--m3d-texto);
+      display: flex; align-items: center; gap: .55rem;
+    }
+    .h-marcador small { font-size: .78rem; font-weight: 400; letter-spacing: .02em; text-transform: none; opacity: .6; }
+    .h-marcador i { width: 10px; height: 10px; border-radius: 50%; background: var(--m3d-acento); box-shadow: 0 0 0 6px color-mix(in srgb, var(--m3d-acento) 22%, transparent); }
+    .h-marcador--origen { left: clamp(1.25rem, 6vw, 6rem); top: 66%; }
+    .h-marcador--destino { right: clamp(1.25rem, 6vw, 6rem); top: 30%; flex-direction: row-reverse; }
+
+    .h-sellos { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; }
+    .h-sello { font-size: .78rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: .45rem .8rem; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--m3d-acento) 70%, transparent); color: #8F6B06; }
+
+    /* Los cinco colores */
+    .c-muestras { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.2rem; padding: 0; list-style: none; }
+    .c-muestras li { display: flex; align-items: center; gap: .45rem; font-size: .85rem; font-weight: 700; padding: .35rem .75rem .35rem .4rem; border-radius: 999px; background: color-mix(in srgb, var(--m3d-texto) 6%, transparent); }
+    .c-muestras i { width: 18px; height: 18px; border-radius: 50%; border: 1px solid #0b203633; }
+
+    /* Catálogo: sección ancha con todos los productos */
+    .cat { display: block; max-width: var(--m3d-ancho); }
+    .cat > header h2 { font-size: clamp(2rem, 4.4vw, 3.6rem); }
+    .cat > header { max-width: 60ch; margin: 0 auto 1.5rem; text-align: center; }
+    .cat-filtros { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin: 0 0 1.5rem; }
+    .cat-filtros button { font: inherit; font-size: .85rem; font-weight: 700; cursor: pointer; padding: .5rem 1rem; border-radius: 999px; border: 1px solid #0b203633; background: transparent; color: var(--m3d-texto); }
+    .cat-filtros button[aria-pressed="true"] { background: var(--m3d-texto); color: var(--m3d-fondo); border-color: var(--m3d-texto); }
+    .cat-rejilla { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+    .cat-rejilla .m3d-tarjeta { padding: .8rem .8rem 1.1rem; background: color-mix(in srgb, #ffffff 70%, transparent); }
+    .cat-rejilla .m3d-tarjeta img { aspect-ratio: 3 / 4; object-fit: contain; background: #fff; margin-bottom: .8rem; }
+    .cat-rejilla .m3d-tarjeta h3 { font-size: 1.25rem; }
+    .cat-rejilla .m3d-tarjeta .m3d-precio { color: #8F6B06; font-size: 1.3rem; margin-top: .5rem; }
+    .cat-stock { display: block; font-size: .8rem; opacity: .7; margin-top: .15rem; }
+    .cat-nota { text-align: center; font-size: .85rem; opacity: .7; margin-top: 1.2rem; }
+    .cat [hidden] { display: none; }
+
+    @media (max-width: 819px) {
+      .h-viaje { min-height: 200vh; }
+      .h-aterrizaje { top: 100vh; }
+      .h-viaje-escena { padding-top: 50vh; text-align: left; }
+      .h-viaje-escena > * { justify-self: start; }
+      .h-marcador { font-size: .7rem; }
+      .h-marcador--origen { top: 42%; }
+      .h-marcador--destino { top: 16%; }
+      .cat { padding-top: 6rem; }
+      .cat-rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
+      .cat-rejilla .m3d-tarjeta h3 { font-size: 1.05rem; }
+      .m3d-cabecera__marca span { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="m3d-intro" aria-hidden="true">
+    <img src="assets/logo.png" alt="">
+  </div>
+
+  <header class="m3d-cabecera">
+    <a class="m3d-cabecera__marca" href="#inicio">
+      <img src="assets/logo.png" alt="Fabloval"><span>FABLOVAL</span>
+    </a>
+    <a class="m3d-boton" href="https://wa.me/584244294175?text=Hola%20Fabloval%2C%20quiero%20hacer%20un%20pedido" target="_blank" rel="noopener">Pedir por WhatsApp</a>
+  </header>
+
+  <div class="h-fondo" aria-hidden="true"></div>
+
+  <canvas id="escena3d"></canvas>
+
+  <!-- Objetos: estrella = el logo de Fabloval en volumen; camión de entregas con estela; bloques flotando;
+       el bloque en los cinco colores Color Kreto; logo recortado; partículas doradas -->
+  <main data-motor3d
+        data-modelo="assets/producto.glb"
+        data-acento="#B8890A"
+        data-fondo="#EEF0E9"
+        data-poster="assets/poster.png"
+        data-giro="vaiven"
+        data-objetos='[
+          {"id":"vehiculo","tipo":"glb","src":"assets/camion.glb","estela":{"color":"#B8890A","guion":0.16,"hueco":0.1,"opacidad":0.85}},
+          {"id":"piezas","tipo":"formas","src":"assets/bloque.glb","cantidad":18,"radio":1.35,"tamano":0.32,"semilla":11},
+          {"id":"bloque","tipo":"glb","src":"assets/bloque.glb"},
+          {"id":"marfil","tipo":"copia","de":"bloque","color":"#E9DFC8"},
+          {"id":"greige","tipo":"copia","de":"bloque","color":"#BDB3A3"},
+          {"id":"ceniza","tipo":"copia","de":"bloque","color":"#9A9C98"},
+          {"id":"grafito","tipo":"copia","de":"bloque","color":"#4A4C4E"},
+          {"id":"logo","tipo":"logo","src":"assets/logo-recorte.png","fondo":"transparente","grosor":0.04},
+          {"id":"ambiente","tipo":"particulas","cantidad":140,"tamano":0.08}
+        ]'>
+
+    <!-- 1 · APERTURA -->
+    <section id="inicio" class="m3d-seccion m3d-seccion--centro m3d-seccion--hero"
+             data-3d='{"rot":[0,0,0],"pos":[0,0.95,0],"escala":0.55,"cam":[0,0,6.6],"mira":[0,0,0],"luz":1.2,
+                       "objetos":{"ambiente":{"opacidad":0.7},
+                                  "vehiculo":{"pos":[-3.6,0.8,-1],"rot":[0,90,0],"escala":0.5,"opacidad":0}}}'>
+      <div class="m3d-hero-entra">
+        <span class="m3d-etiqueta">Fabloval · Construcción y prefabricados</span>
+        <h1 class="m3d-titulo m3d-titulo--xl m3d-split">Paredes, techos y pisos, cubiertos.</h1>
+        <p class="m3d-texto m3d-texto--grande">Materiales para construir con soluciones eficientes y duraderas: revestimientos, bases, impermeabilizantes y kits de microcemento, con precio y disponibilidad al día.</p>
+        <div class="m3d-botones">
+          <a class="m3d-boton m3d-pulso" href="https://wa.me/584244294175?text=Hola%20Fabloval%2C%20quiero%20hacer%20un%20pedido" target="_blank" rel="noopener">Pedir por WhatsApp</a>
+          <a class="m3d-boton m3d-boton--fantasma" href="#catalogo">Ver catálogo</a>
+        </div>
+      </div>
+      <div class="m3d-pista">Desliza</div>
+    </section>
+
+    <!-- 2 · QUÉ HACEMOS: se enciende la foto de la obra y los bloques flotan -->
+    <section id="origen" class="m3d-seccion m3d-seccion--izq"
+             data-3d='{"rot":[0,30,0],"pos":[1.75,0,0],"escala":0.8,"cam":[0,0.1,6],"luz":1.3,
+                       "objetos":{"ambiente":{"opacidad":0.25},
+                                  "piezas":{"pos":[1.9,0,-0.5],"escala":0.75,"opacidad":1}}}'>
+      <span class="m3d-etiqueta m3d-reveal">Qué hacemos</span>
+      <h2 class="m3d-titulo m3d-reveal">Todo lo que tu obra necesita para quedar terminada</h2>
+      <p class="m3d-texto m3d-reveal">En Fabloval vendemos materiales para construcción y te ayudamos a elegir la solución que dura: desde la base de la pared hasta el acabado en microcemento y la impermeabilización del techo.</p>
+      <div class="m3d-cifras m3d-reveal">
+        <div class="m3d-cifra"><span class="m3d-contador" data-valor="16" data-sufijo="">0</span><small>productos en catálogo</small></div>
+        <div class="m3d-cifra"><span class="m3d-contador" data-valor="8" data-sufijo="">0</span><small>líneas de producto</small></div>
+      </div>
+    </section>
+
+    <!-- 3 · POR QUÉ FABLOVAL -->
+    <section id="valor" class="m3d-seccion m3d-seccion--der"
+             data-3d='{"rot":[0,-25,0],"pos":[-1.6,0.05,0],"escala":0.85,"cam":[0,0.1,6],"luz":1.2,
+                       "objetos":{"piezas":{"pos":[-1.9,0,-0.5],"escala":0.7,"opacidad":0.9},
+                                  "vehiculo":{"pos":[-3.6,0.4,-0.6],"rot":[4,78,-7],"escala":0.5,"opacidad":0}}}'>
+      <span class="m3d-etiqueta m3d-reveal">Por qué Fabloval</span>
+      <h2 class="m3d-titulo m3d-reveal">Soluciones eficientes y duraderas</h2>
+      <p class="m3d-texto m3d-reveal">Materiales de calidad, a precio de mayor y en tu obra.</p>
+      <ol class="m3d-puntos">
+        <li class="m3d-reveal"><strong>Distribuidor autorizado</strong><span>Trabajamos la línea completa de Super Kreto: bases, revestimientos, impermeabilizantes y microcemento.</span></li>
+        <li class="m3d-reveal"><strong>Precios al mayor, IVA incluido</strong><span>Precios en dólares con el IVA (7 %) ya sumado. Sin sorpresas al pagar.</span></li>
+        <li class="m3d-reveal"><strong>Entrega en tu obra</strong><span>Te llevamos el material para que no pierdas un día de trabajo.</span></li>
+      </ol>
+    </section>
+
+    <!-- 4 · EL VIAJE: el camión cruza de Fabloval a tu obra -->
+    <section id="viaje" class="m3d-seccion h-viaje"
+             data-3d='{"rot":[0,-20,0],"pos":[-3.4,0.3,-0.4],"escala":0.6,"opacidad":0,"cam":[0,0,6.6],"mira":[0,0,0],"luz":1.1,
+                       "objetos":{"piezas":{"opacidad":0},
+                                  "vehiculo":{"pos":[-2.7,-0.35,0.5],"rot":[6,72,-10],"escala":0.6,"opacidad":1},
+                                  "ambiente":{"opacidad":0.5}}}'>
+      <div class="h-viaje-escena">
+        <div class="h-marcador h-marcador--origen" aria-hidden="true"><i></i>Fabloval <small>· tu pedido</small></div>
+        <div class="h-marcador h-marcador--destino" aria-hidden="true"><i></i>Tu obra</div>
+        <span class="m3d-etiqueta m3d-reveal">Entregas</span>
+        <h2 class="m3d-titulo m3d-titulo--xl m3d-reveal">De Fabloval a tu obra</h2>
+        <p class="m3d-texto m3d-texto--grande m3d-reveal">Haz tu pedido por WhatsApp y te llevamos el material donde lo necesitas.</p>
+      </div>
+      <section id="aterrizaje" class="m3d-seccion h-aterrizaje" aria-hidden="true"
+               data-3d='{"rot":[0,-20,0],"pos":[-3.4,0.3,-0.4],"escala":0.6,"opacidad":0,"cam":[0,0,6.6],"mira":[0,0,0],"luz":1.1,
+                         "objetos":{"vehiculo":{"pos":[2.3,0.45,0.5],"rot":[2,88,4],"escala":0.5,"opacidad":1,"arco":0.55}}}'></section>
+    </section>
+
+    <!-- 5 · LOS COLORES: el bloque en los cinco tonos de Color Kreto -->
+    <section id="colores" class="m3d-seccion m3d-seccion--der"
+             data-3d='{"rot":[0,15,0],"pos":[-1.6,1.1,-1],"escala":0.4,"opacidad":0,"cam":[0,0.1,6],"mira":[0,0,0],"luz":1.3,
+                       "objetos":{"vehiculo":{"pos":[4.4,0.9,0.5],"rot":[2,88,4],"escala":0.45,"opacidad":0},
+                                  "bloque":{"pos":[-2.15,0.55,0],"rot":[15,30,0],"escala":0.28,"opacidad":1},
+                                  "marfil":{"pos":[-1.25,0.55,0],"rot":[15,30,0],"escala":0.28,"opacidad":1},
+                                  "greige":{"pos":[-0.35,0.55,0],"rot":[15,30,0],"escala":0.28,"opacidad":1},
+                                  "ceniza":{"pos":[-1.7,-0.55,0],"rot":[15,30,0],"escala":0.28,"opacidad":1},
+                                  "grafito":{"pos":[-0.8,-0.55,0],"rot":[15,30,0],"escala":0.28,"opacidad":1},
+                                  "ambiente":{"opacidad":0.3}}}'>
+      <span class="m3d-etiqueta m3d-reveal">Color Kreto</span>
+      <h2 class="m3d-titulo m3d-reveal">Cinco tonos para tus paredes</h2>
+      <p class="m3d-texto m3d-reveal">Revestimiento de color en saco de 6 kg, listo para dar el acabado final a la pared.</p>
+      <ul class="c-muestras m3d-reveal">
+        <li><i style="background:#F2F2EE"></i>Blanco</li>
+        <li><i style="background:#E9DFC8"></i>Marfil</li>
+        <li><i style="background:#BDB3A3"></i>Greige</li>
+        <li><i style="background:#9A9C98"></i>Ceniza</li>
+        <li><i style="background:#4A4C4E"></i>Grafito</li>
+      </ul>
+      <span class="m3d-precio m3d-reveal" style="color:#8F6B06">$8.03 el saco de 6 kg</span>
+    </section>
+
+    <!-- 6 · EL CATÁLOGO: todos los productos con precio y existencias -->
+    <section id="catalogo" class="m3d-seccion m3d-seccion--ancha cat"
+             data-3d='{"rot":[0,0,0],"pos":[0,2.4,-2],"escala":0.3,"opacidad":0,"cam":[0,0,6.6],"mira":[0,0,0],"luz":1.1,
+                       "objetos":{"bloque":{"opacidad":0},"marfil":{"opacidad":0},"greige":{"opacidad":0},"ceniza":{"opacidad":0},"grafito":{"opacidad":0},
+                                  "ambiente":{"opacidad":0.25}}}'>
+      <header>
+        <span class="m3d-etiqueta m3d-reveal">Catálogo</span>
+        <h2 class="m3d-titulo m3d-reveal">Precio y disponibilidad al día</h2>
+        <p class="m3d-texto m3d-reveal">Precios en USD, al mayor, IVA (7 %) incluido.</p>
+      </header>
+      <div class="cat-filtros" role="group" aria-label="Filtrar por línea">
+        <button type="button" data-filtro="todos" aria-pressed="true">Todos</button>
+        <button type="button" data-filtro="revestimientos" aria-pressed="false">Revestimientos</button>
+        <button type="button" data-filtro="bases" aria-pressed="false">Bases, aditivos y selladores</button>
+        <button type="button" data-filtro="impermeabilizantes" aria-pressed="false">Impermeabilizantes</button>
+        <button type="button" data-filtro="stucco" aria-pressed="false">Stucco</button>
+        <button type="button" data-filtro="microcemento" aria-pressed="false">Microcemento</button>
+      </div>
+      <div class="cat-rejilla">
+        <article class="m3d-tarjeta" data-linea="revestimientos"><img src="assets/productos/blanco.jpg" alt="Color Kreto Blanco" loading="lazy"><h3>Color Kreto Blanco</h3><p>Saco 6 kg</p><span class="m3d-precio">$8.03</span><span class="cat-stock">Disponibles: 4 sacos</span></article>
+        <article class="m3d-tarjeta" data-linea="revestimientos"><img src="assets/productos/marfil.jpg" alt="Color Kreto Marfil" loading="lazy"><h3>Color Kreto Marfil</h3><p>Saco 6 kg</p><span class="m3d-precio">$8.03</span><span class="cat-stock">Disponibles: 4 sacos</span></article>
+        <article class="m3d-tarjeta" data-linea="revestimientos"><img src="assets/productos/greige.jpg" alt="Color Kreto Greige" loading="lazy"><h3>Color Kreto Greige</h3><p>Saco 6 kg</p><span class="m3d-precio">$8.03</span><span class="cat-stock">Disponibles: 4 sacos</span></article>
+        <article class="m3d-tarjeta" data-linea="revestimientos"><img src="assets/productos/ceniza.jpg" alt="Color Kreto Ceniza" loading="lazy"><h3>Color Kreto Ceniza</h3><p>Saco 6 kg</p><span class="m3d-precio">$8.03</span><span class="cat-stock">Disponibles: 4 sacos</span></article>
+        <article class="m3d-tarjeta" data-linea="revestimientos"><img src="assets/productos/grafito.jpg" alt="Color Kreto Grafito" loading="lazy"><h3>Color Kreto Grafito</h3><p>Saco 6 kg</p><span class="m3d-precio">$8.03</span><span class="cat-stock">Disponibles: 4 sacos</span></article>
+        <article class="m3d-tarjeta" data-linea="bases"><img src="assets/productos/base-12.jpg" alt="Base Kreto 12" loading="lazy"><h3>Base Kreto 12</h3><p>Saco 10 kg</p><span class="m3d-precio">$5.35</span><span class="cat-stock">Disponibles: 2 sacos</span></article>
+        <article class="m3d-tarjeta" data-linea="bases"><img src="assets/productos/acryl.jpg" alt="Acryl Kreto" loading="lazy"><h3>Acryl Kreto</h3><p>Aditivo adherente · Galón 3,7 L</p><span class="m3d-precio">$21.94</span><span class="cat-stock">Disponibles: 4 galones</span></article>
+        <article class="m3d-tarjeta" data-linea="bases"><img src="assets/productos/sella.jpg" alt="Sella Kreto" loading="lazy"><h3>Sella Kreto</h3><p>Sellador transparente · Galón 3,7 L</p><span class="m3d-precio">$20.33</span><span class="cat-stock">Disponibles: 4 galones</span></article>
+        <article class="m3d-tarjeta" data-linea="impermeabilizantes"><img src="assets/productos/kit-bi.jpg" alt="Kit Bi Kreto" loading="lazy"><h3>Kit Bi Kreto</h3><p>Mortero impermeabilizante · 1 galón + saco 20 kg</p><span class="m3d-precio">$43.34</span><span class="cat-stock">Disponibles: 2 kits</span></article>
+        <article class="m3d-tarjeta" data-linea="impermeabilizantes"><img src="assets/productos/roof-blanco.jpg" alt="Roof Kreto Blanco" loading="lazy"><h3>Roof Kreto Blanco</h3><p>Impermeabilizante elastomérico · Cuñete 19 L</p><span class="m3d-precio">$101.65</span><span class="cat-stock">Disponibles: 1 cuñete</span></article>
+        <article class="m3d-tarjeta" data-linea="impermeabilizantes"><img src="assets/productos/roof-gris.jpg" alt="Roof Kreto Gris" loading="lazy"><h3>Roof Kreto Gris</h3><p>Impermeabilizante elastomérico · Cuñete 19 L</p><span class="m3d-precio">$101.65</span><span class="cat-stock">Disponibles: 1 cuñete</span></article>
+        <article class="m3d-tarjeta" data-linea="stucco"><img src="assets/productos/stucco.jpg" alt="Stucco Kreto Gris" loading="lazy"><h3>Stucco Kreto Gris</h3><p>Saco 10 kg</p><span class="m3d-precio">$6.96</span><span class="cat-stock">Disponibles: 10 sacos</span></article>
+        <article class="m3d-tarjeta" data-linea="microcemento"><img src="assets/productos/micro-ceniza.jpg" alt="Micro Kreto Ceniza" loading="lazy"><h3>Micro Kreto Ceniza</h3><p>Kit pared · 5 m²</p><span class="m3d-precio">$73.83</span><span class="cat-stock">Disponibles: 2 kits</span></article>
+        <article class="m3d-tarjeta" data-linea="microcemento"><img src="assets/productos/micro-grafito.jpg" alt="Micro Kreto Grafito" loading="lazy"><h3>Micro Kreto Grafito</h3><p>Kit pared · 5 m²</p><span class="m3d-precio">$73.83</span><span class="cat-stock">Disponibles: 2 kits</span></article>
+        <article class="m3d-tarjeta" data-linea="microcemento"><img src="assets/productos/micro-marfil.jpg" alt="Micro Kreto Marfil" loading="lazy"><h3>Micro Kreto Marfil</h3><p>Kit pared · 5 m²</p><span class="m3d-precio">$73.83</span><span class="cat-stock">Disponibles: 2 kits</span></article>
+        <article class="m3d-tarjeta" data-linea="microcemento"><img src="assets/productos/micro-blanco.jpg" alt="Micro Kreto Blanco" loading="lazy"><h3>Micro Kreto Blanco</h3><p>Kit pared · 5 m²</p><span class="m3d-precio">$76.51</span><span class="cat-stock">Disponibles: 2 kits</span></article>
+      </div>
+      <p class="cat-nota">Precios sujetos a cambio sin previo aviso. Consulta existencias por WhatsApp antes de tu pedido.</p>
+    </section>
+
+    <!-- 7 · CIERRE: logo 3D y logo recortado en pareja; WhatsApp -->
+    <section id="contacto" class="m3d-seccion m3d-seccion--centro m3d-seccion--abajo"
+             data-3d='{"rot":[0,360,0],"pos":[-0.8,1.0,0],"escala":0.5,"opacidad":1,"cam":[0,0,6.6],"mira":[0,0,0],"luz":1.2,
+                       "objetos":{"logo":{"pos":[0.85,1.05,0],"rot":[0,0,0],"escala":0.55,"opacidad":1},
+                                  "ambiente":{"opacidad":0.65}}}'>
+      <span class="m3d-etiqueta m3d-reveal">Fabloval</span>
+      <h2 class="m3d-titulo m3d-titulo--xl m3d-reveal">¿Empezamos tu obra?</h2>
+      <p class="m3d-texto m3d-texto--grande m3d-reveal">Escríbenos por WhatsApp al +58 424-4294175 y te preparamos el pedido.</p>
+      <div class="m3d-botones m3d-reveal" style="justify-content:center">
+        <a class="m3d-boton m3d-pulso" href="https://wa.me/584244294175?text=Hola%20Fabloval%2C%20quiero%20hacer%20un%20pedido" target="_blank" rel="noopener">Pedir por WhatsApp</a>
+        <a class="m3d-boton m3d-boton--fantasma" href="https://www.instagram.com/fablo.val/" target="_blank" rel="noopener">Instagram @fablo.val</a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="m3d-pie">
+    <nav>
+      <a href="#origen">Qué hacemos</a>
+      <a href="#viaje">Entregas</a>
+      <a href="#catalogo">Catálogo</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <div>Fabloval · WhatsApp <a href="https://wa.me/584244294175" target="_blank" rel="noopener">+58 424-4294175</a> · <a href="https://www.instagram.com/fablo.val/" target="_blank" rel="noopener">@fablo.val</a></div>
+  </footer>
+
+  <script type="module" src="motor-3d/motor3d.js"></script>
+  <script>
+    // El fondo fotográfico se enciende mientras "Qué hacemos" está a la vista
+    (function () {
+      const fondo = document.querySelector('.h-fondo');
+      const origen = document.getElementById('origen');
+      if (!fondo || !origen || !('IntersectionObserver' in window)) return;
+      const io = new IntersectionObserver((entradas) => {
+        entradas.forEach((e) => fondo.classList.toggle('h-visible', e.isIntersecting));
+      }, { threshold: 0.35 });
+      io.observe(origen);
+    })();
+    // Filtros del catálogo
+    (function () {
+      const botones = document.querySelectorAll('.cat-filtros button');
+      const tarjetas = document.querySelectorAll('.cat-rejilla article');
+      botones.forEach((b) => b.addEventListener('click', () => {
+        botones.forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+        const f = b.dataset.filtro;
+        tarjetas.forEach((t) => { t.hidden = f !== 'todos' && t.dataset.linea !== f; });
+        window.dispatchEvent(new Event('resize'));
+      }));
+    })();
+  </script>
+</body>
+</html>
